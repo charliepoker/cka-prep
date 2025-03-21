@@ -1,0 +1,65 @@
+name: Deploy to CIVO Kubernetes
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  CIVO_TOKEN: ${{ secrets.CIVO_API_KEY }}
+  CLUSTER_NAME: mongodb-cluster
+  CIVO_REGION: nyc1  
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install CIVO CLI
+        run: |
+          curl -sL https://civo.com/get | sh
+          civo apikey add github-action ${{ secrets.CIVO_API_KEY}}
+
+      - name: Create Kubernetes cluster
+        run: |
+          civo kubernetes create $CLUSTER_NAME \
+            --nodes=3 \
+            --size=g4s.kube.medium \
+            --wait
+
+      - name: Get Kubeconfig
+        run: |
+          civo kubernetes config $CLUSTER_NAME --save
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Deploy MongoDB Secret
+        run: |
+          kubectl apply -f mongo-secret.yaml
+
+      - name: Deploy MongoDB ConfigMap
+        run: |
+          kubectl apply -f mongo-configmap.yaml
+
+      - name: Deploy MongoDB
+        run: |
+          kubectl apply -f mongo.yaml
+
+      - name: Deploy Mongo Express
+        run: |
+          kubectl apply -f mongo-express.yaml
+
+      - name: Wait for deployments
+        run: |
+          kubectl wait --for=condition=available --timeout=300s deployment/mongodb-deployment
+          kubectl wait --for=condition=available --timeout=300s deployment/mongo-express
+
+      - name: Get Service Status
+        run: |
+          echo "MongoDB Service:"
+          kubectl get svc mongodb-service
+          echo "Mongo Express Service:"
+          kubectl get svc mongo-express-service
