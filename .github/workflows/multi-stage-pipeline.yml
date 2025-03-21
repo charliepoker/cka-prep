@@ -105,7 +105,7 @@ jobs:
           
       - name: Get Kubeconfig and verify cluster access
         run: |
-          civo kubernetes config $CLUSTER_NAME --save --merge
+          civo kubernetes config $CLUSTER_NAME --save 
           kubectl config use-context $CLUSTER_NAME
           kubectl cluster-info
           kubectl get nodes
