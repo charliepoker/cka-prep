@@ -36,21 +36,22 @@ jobs:
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
 
+      # Updated paths to match your directory structure
       - name: Deploy MongoDB Secret
         run: |
-          kubectl apply -f mongo-secret.yaml
+          kubectl apply -f ${{ github.workspace }}/mongo-secret.yaml
 
       - name: Deploy MongoDB ConfigMap
         run: |
-          kubectl apply -f mongo-configmap.yaml
+          kubectl apply -f ${{ github.workspace }}/mongo-configmap.yaml
 
       - name: Deploy MongoDB
         run: |
-          kubectl apply -f mongo.yaml
+          kubectl apply -f ${{ github.workspace }}/mongo.yaml
 
       - name: Deploy Mongo Express
         run: |
-          kubectl apply -f mongo-express.yaml
+          kubectl apply -f ${{ github.workspace }}/mongo-express.yaml
 
       - name: Wait for deployments
         run: |
