@@ -1,3 +1,72 @@
+# name: Deploy to CIVO Kubernetes
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# env:
+#   CIVO_TOKEN: ${{ secrets.CIVO_API_KEY }}
+#   CLUSTER_NAME: mongodb-cluster
+#   CIVO_REGION: nyc1  
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Install CIVO CLI
+#         run: |
+#           curl -sL https://civo.com/get | sh
+#           civo apikey add github-action ${{ secrets.CIVO_API_KEY}}
+
+#       - name: Create Kubernetes cluster
+#         run: |
+#           civo kubernetes create $CLUSTER_NAME \
+#             --nodes=3 \
+#             --size=g4s.kube.medium \
+#             --wait
+
+#       - name: Get Kubeconfig
+#         run: |
+#           civo kubernetes config $CLUSTER_NAME --save
+
+#       - name: Install kubectl
+#         uses: azure/setup-kubectl@v3
+
+#       # Updated paths to match your directory structure
+#       - name: Deploy MongoDB Secret
+#         run: |
+#           kubectl apply -f ${{ github.workspace }}/mongo-secret.yaml
+
+#       - name: Deploy MongoDB ConfigMap
+#         run: |
+#           kubectl apply -f ${{ github.workspace }}/mongo-configmap.yaml
+
+#       - name: Deploy MongoDB
+#         run: |
+#           kubectl apply -f ${{ github.workspace }}/mongo.yaml
+
+#       - name: Deploy Mongo Express
+#         run: |
+#           kubectl apply -f ${{ github.workspace }}/mongo-express.yaml
+
+#       - name: Wait for deployments
+#         run: |
+#           kubectl wait --for=condition=available --timeout=300s deployment/mongodb-deployment
+#           kubectl wait --for=condition=available --timeout=300s deployment/mongo-express
+
+#       - name: Get Service Status
+#         run: |
+#           echo "MongoDB Service:"
+#           kubectl get svc mongodb-service
+#           echo "Mongo Express Service:"
+#           kubectl get svc mongo-express-service
+
+
+
 name: Deploy to CIVO Kubernetes
 
 on:
@@ -8,7 +77,7 @@ on:
 env:
   CIVO_TOKEN: ${{ secrets.CIVO_API_KEY }}
   CLUSTER_NAME: mongodb-cluster
-  CIVO_REGION: nyc1  
+  CIVO_REGION: nyc1
 
 jobs:
   deploy:
@@ -20,7 +89,7 @@ jobs:
       - name: Install CIVO CLI
         run: |
           curl -sL https://civo.com/get | sh
-          civo apikey add github-action ${{ secrets.CIVO_API_KEY}}
+          civo apikey add github-action ${{ secrets.CIVO_API_KEY }}
 
       - name: Create Kubernetes cluster
         run: |
@@ -28,33 +97,44 @@ jobs:
             --nodes=3 \
             --size=g4s.kube.medium \
             --wait
-
-      - name: Get Kubeconfig
+          
+      - name: Wait for cluster to be ready
         run: |
-          civo kubernetes config $CLUSTER_NAME --save
+          echo "Waiting for cluster to be ready..."
+          sleep 60  # Give additional time for cluster to initialize
+          
+      - name: Get Kubeconfig and verify cluster access
+        run: |
+          civo kubernetes config $CLUSTER_NAME --save --merge
+          kubectl config use-context $CLUSTER_NAME
+          kubectl cluster-info
+          kubectl get nodes
 
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v3
-
-      # Updated paths to match your directory structure
+      - name: Verify kubectl configuration
+        run: |
+          kubectl config view
+          kubectl config current-context
+          
       - name: Deploy MongoDB Secret
         run: |
-          kubectl apply -f ${{ github.workspace }}/mongo-secret.yaml
+          kubectl apply -f mongo-secret.yaml --validate=false
 
       - name: Deploy MongoDB ConfigMap
         run: |
-          kubectl apply -f ${{ github.workspace }}/mongo-configmap.yaml
+          kubectl apply -f mongo-configmap.yaml --validate=false
 
       - name: Deploy MongoDB
         run: |
-          kubectl apply -f ${{ github.workspace }}/mongo.yaml
+          kubectl apply -f mongo.yaml --validate=false
 
       - name: Deploy Mongo Express
         run: |
-          kubectl apply -f ${{ github.workspace }}/mongo-express.yaml
+          kubectl apply -f mongo-express.yaml --validate=false
 
       - name: Wait for deployments
         run: |
+          echo "Waiting for deployments to be ready..."
+          kubectl get pods -A
           kubectl wait --for=condition=available --timeout=300s deployment/mongodb-deployment
           kubectl wait --for=condition=available --timeout=300s deployment/mongo-express
 
