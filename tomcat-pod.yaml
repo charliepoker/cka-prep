@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tomcat-pod
+  labels:
+    environment: production
+    app: tomcat
+spec:
+  containers:
+  - name: tomcat
+    image: tomcat:9.0.102-jdk8-corretto-al2
+    ports:
+    - containerPort: 8080
+
