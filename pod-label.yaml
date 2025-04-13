@@ -1,0 +1,41 @@
+# This YAML file defines three Kubernetes pods with different labels.
+# Each pod runs an nginx container.
+# The labels are used to categorize the pods into different environments.
+# The first pod is labeled for testing, the second for development, and the third for production.
+# The labels can be used for selecting and managing the pods in a Kubernetes cluster.
+# The file is structured in a way that each pod definition is separated by '---' for clarity.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+  labels:
+    env: test
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod2
+  labels:
+    env: dev
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+     
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod3
+  labels:
+    env: prod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+  
