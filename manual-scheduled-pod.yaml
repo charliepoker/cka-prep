@@ -1,0 +1,15 @@
+# This YAML file defines a Kubernetes Pod that is manually scheduled to run on a specific node.
+# The pod runs an Nginx container and is scheduled on the node named "cka-cluster-worker".
+# The pod is not managed by a deployment or replica set, and it will not be automatically rescheduled if the node goes down.
+# The pod is defined with a specific node name, which means it will only run on that node.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: manual-scheduled-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+  nodeName: cka-cluster-worker
