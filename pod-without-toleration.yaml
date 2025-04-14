@@ -1,0 +1,16 @@
+# This YAML file defines a Kubernetes Pod that does not have any tolerations.
+# It is intended to be used in a cluster with taints, and will not be scheduled on nodes with those taints.
+# The Pod will be scheduled on nodes that do not have the taints or on nodes that have matching tolerations.
+# This is a simple example of a Pod definition without any tolerations.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-without-toleration
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+
+

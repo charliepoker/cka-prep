@@ -1,0 +1,25 @@
+# This YAML file defines a Kubernetes Pod with a toleration for a specific taint.
+# The toleration allows the Pod to be scheduled on nodes with the specified taint.
+# The Pod runs an Nginx container and listens on port 80.
+# The toleration is defined with the key "gpu", operator "Equal", value "true", and effect "NoSchedule".
+# This means that the Pod can be scheduled on nodes that have the taint "gpu=true:NoSchedule".
+# The toleration allows the Pod to tolerate the taint and be scheduled on those nodes.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-toleration
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+  tolerations:
+  - key: "gpu"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+
+
+
+    
